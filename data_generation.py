@@ -1,10 +1,12 @@
 import os
 import cv2
+import h5py
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 
 path = './chest_xray/'
+data_file = './processed_data/normalized_rawdata.h5'
 
 # define paths
 train_dir = path + 'train'
@@ -12,7 +14,7 @@ val_dir = path + 'val'
 test_dir = path + 'test'
 
 labels = ['NORMAL', 'PNEUMONIA']
-img_size = 200
+img_size = 256
 
 def array_data (data_dir):
     data = []
@@ -25,7 +27,7 @@ def array_data (data_dir):
             resized_arr = cv2.resize(img_arr, (img_size, img_size))
             data.append ([resized_arr, class_num])
 
-    np.random.shuffle(data)
+    #np.random.shuffle(data)
 
     return np.array(data, dtype=object)
 
@@ -33,20 +35,7 @@ train_data = array_data (train_dir)
 val_data = array_data (val_dir)
 test_data = array_data (test_dir)
 
-### Ploting 1 image from train, val, test data set
-#plt.imshow(train_data[0][0], cmap='gray')
-#plt.show()
-#
-#plt.imshow(val_data[0][0], cmap='gray')
-#plt.show()
-#
-#plt.imshow(test_data[0][0], cmap='gray')
-#plt.show()
-
-## Accessing elements
-#print("First element, matrix:\n", train_data[0][0])
-
-# Count plot for dataset
+## Count bar plot for dataset
 #l= []
 #
 #for i in train_data:
@@ -81,21 +70,24 @@ for feature, label in val_data:
     y_val.append(label)
 
 # Normalization
-x_train = np.array(x_train) / 255
-x_val = np.array(x_val) / 255
-x_test = np.array(x_test) / 255
+x_train = np.array(x_train) / 255.0
+x_val = np.array(x_val) / 255.0
+x_test = np.array(x_test) / 255.0
 
 y_train = np.array(y_train)
 y_val = np.array(y_val)
 y_test = np.array(y_test)
 
-#x_train = x_train.reshape(-1, img_size, img_size, 1)
-#x_val = x_val.reshape(-1, img_size, img_size, 1)
-#x_test = x_test.reshape(-1, img_size, img_size, 1)
+#x_train = x_train.reshape(x_train.shape[0], -1)
+#x_val = x_val.reshape(x_val.shape[0], -1)
+#x_test = x_test.reshape(x_test.shape[0], -1)
 
-print ("train Data:", x_train.shape)
-print ("val Data:", x_val.shape)
-print ("test Data:", x_test.shape)
-print ("train Data:", y_train.shape)
-print ("val Data:", y_val.shape)
-print ("test Data:", y_test.shape)
+with h5py.File(data_file, 'w') as file:
+    file.create_dataset('train_data',  data=x_train)
+    file.create_dataset('train_label', data=y_train) 
+
+    file.create_dataset('val_data',  data=x_val)
+    file.create_dataset('val_label', data=y_val) 
+
+    file.create_dataset('test_data',  data=x_test)
+    file.create_dataset('test_label', data=y_test) 
