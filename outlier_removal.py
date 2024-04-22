@@ -7,11 +7,16 @@ from scipy import stats
 import matplotlib.pyplot as plt
 
 file_path = './processed_data/normalized_rawdata.h5'
+augm_path = './processed_data/augmented_traindata.h5'
 
 ## Reading data from file
-with h5py.File(file_path, 'r') as file:
-    x_train = file['train_data'][:]
-    y_train = file['train_label'][:]
+#with h5py.File(file_path, 'r') as file:
+#    x_train = file['train_data'][:]
+#    y_train = file['train_label'][:]
+
+with h5py.File(augm_path, 'r') as file:
+    x_train = file['augmented_train_data'][:]
+    y_train = file['augmented_train_label'][:]
 
 #### STep1: Z-score based outlier detection
 
@@ -51,8 +56,8 @@ Q3 = np.percentile(means1, 75)
 IQR = Q3 - Q1
 
 # Define bounds for outliers
-lower_bound = Q1 - 1.5 * IQR
-upper_bound = Q3 + 1.5 * IQR
+lower_bound = Q1 - 2.5 * IQR
+upper_bound = Q3 + 2.5 * IQR
 
 # Filter out outliers
 good_indices = (means1 > lower_bound) & (means1 < upper_bound)
@@ -63,6 +68,13 @@ y_train_IQRfiltered = y_train_Zfiltered[good_indices]
 
 print(f"Original data count: {len(x_train_Zfiltered)}")
 print(f"Filtered data count: {len(x_train_IQRfiltered)}")
+
+# Save data after outliers removal
+out_path = './processed_data/traindata_after_outlier.h5'
+
+with h5py.File(out_path, 'w') as file:
+    file.create_dataset('train_data', data=x_train_IQRfiltered)
+    file.create_dataset('train_label', data=y_train_IQRfiltered)
 
 plt.figure(figsize=(12, 6))
 sns.histplot(means1, bins=30, kde=True, label='Original Train Data')

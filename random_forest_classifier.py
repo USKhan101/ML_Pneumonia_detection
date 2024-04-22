@@ -1,3 +1,4 @@
+import time
 import h5py
 import matplotlib.pyplot as plt
 from sklearn.model_selection import GridSearchCV
@@ -6,24 +7,40 @@ from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay, roc_curve,
 from sklearn.metrics import classification_report, accuracy_score, mean_squared_error
 
 file_path = './processed_data/normalized_rawdata.h5'
+augm_path = './processed_data/augmented_traindata.h5'
+outl_path = './processed_data/traindata_after_outlier.h5'
+feat_path = './processed_data/feature_data.h5'
+
+start_time = time.time()
 
 ## Reading data from file
-with h5py.File(file_path, 'r') as file:
-    x_train = file['train_data'][:]
+with h5py.File(feat_path, 'r') as file:
+    x_train = file['train_feature'][:]
     y_train = file['train_label'][:]
 
-    x_test = file['test_data'][:]
+    x_test = file['test_feature'][:]
     y_test = file['test_label'][:]
 
+## Augmented train data
+#with h5py.File(augm_path, 'r') as file:
+#    x_train = file['augmented_train_data'][:]
+#    y_train = file['augmented_train_label'][:]
+
+# Train data after outliers removal
+#with h5py.File(outl_path, 'r') as file:
+#    x_train = file['train_data'][:]
+#    y_train = file['train_label'][:]
+
 # Flattening the data
-x_train = x_train.reshape(x_train.shape[0], -1)
-x_test = x_test.reshape(x_test.shape[0], -1)
+# do not need for feature data
+#x_train = x_train.reshape(x_train.shape[0], -1)
+#x_test = x_test.reshape(x_test.shape[0], -1)
 
 ## Random forest classifier
 #
 ## Define the parameter grid
 #param_grid = {
-#    'n_estimators': [50, 75 , 100, 150],
+#    'n_estimators': [50, 75 , 100, 120],
 #    'max_depth': [10, 15, 20, 25],
 #    'min_samples_split': [1, 2, 5, 10, 20],
 #    'min_samples_leaf': [1, 2, 5, 7, 10],
@@ -45,7 +62,12 @@ x_test = x_test.reshape(x_test.shape[0], -1)
 #print("Best score:", grid_search.best_score_)
 
 # Fit the model
-rf_classifier = RandomForestClassifier(n_estimators=75, max_depth=15, min_samples_split= 2, min_samples_leaf= 1, max_features= 15, random_state=43)
+
+# For raw/ augmented data
+#rf_classifier = RandomForestClassifier(n_estimators=75, max_depth=15, min_samples_split= 2, min_samples_leaf= 1, max_features= 15, random_state=43)
+
+# for extracted features
+rf_classifier = RandomForestClassifier(n_estimators=120, max_depth=45, min_samples_split= 2, min_samples_leaf= 1, max_features= 15, random_state=43)
 
 rf_classifier.fit(x_train, y_train)
 
@@ -87,3 +109,5 @@ plt.ylabel('True Positive Rate')
 plt.title('Receiver Operating Characteristic')
 plt.legend(loc="lower right")
 plt.show()
+
+print ("Ended in", time.time() - start_time, "seconds.")
