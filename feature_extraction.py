@@ -21,6 +21,9 @@ x_train = x_train.astype(np.uint8)
 x_test = x_test.astype(np.uint8)
 ################  Train Data Feature Extraction  #######################
 
+def feature_extraction(image):
+
+
 # Feature1: Variance of each image
 variances = np.var(x_train, axis=(1, 2)) 
 variances = variances.reshape ((-1, 1))

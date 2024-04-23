@@ -36,17 +36,22 @@ val_data = array_data (val_dir)
 test_data = array_data (test_dir)
 
 ## Count bar plot for dataset
-#l= []
-#
-#for i in train_data:
-#    if (i[1] == 0):
-#        l.append("Normal")
-#    else:
-#        l.append("Pneumonia")
-#
-#sns.set_style('darkgrid')
-#sns.countplot(x=l)
-#plt.show()
+def count_plot (data):
+    l= []
+    
+    for i in data:
+        if (i[1] == 0):
+            l.append("Normal")
+        else:
+            l.append("Pneumonia")
+    
+    sns.set_style('darkgrid')
+    sns.countplot(x=l)
+    plt.show()
+
+count_plot (train_data)
+count_plot (val_data)
+count_plot (test_data)
 
 x_train = []
 y_train = []
@@ -78,9 +83,32 @@ y_train = np.array(y_train)
 y_val = np.array(y_val)
 y_test = np.array(y_test)
 
-#x_train = x_train.reshape(x_train.shape[0], -1)
-#x_val = x_val.reshape(x_val.shape[0], -1)
-#x_test = x_test.reshape(x_test.shape[0], -1)
+plt.subplot(1, 2, 1) 
+plt.imshow(x_train[0])
+plt.title('Train_data: NORMAL')
+
+plt.subplot(1, 2, 2) 
+plt.imshow(x_train[-1])
+plt.title('Train_data: PNEUMONIA')
+
+plt.subplot(2, 2, 1) 
+plt.imshow(x_val[0])
+plt.title('Val_data: NORMAL')
+
+plt.subplot(2, 2, 2) 
+plt.imshow(x_val[-1])
+plt.title('Val_data: PNEUMONIA')
+
+plt.subplot(3, 2, 1) 
+plt.imshow(x_test[0])
+plt.title('Test_data: NORMAL')
+
+plt.subplot(3, 2, 2) 
+plt.imshow(x_test[-1])
+plt.title('Test_data: PNEUMONIA')
+
+plt.pie([len(x_train), len(x_val), len(x_test)], labels=['train', 'validation', 'test'], autopct='%.1f%%', colors=['orange', 'red', 'lightblue'], explode=(0.05, 0, 0))
+plt.show()
 
 with h5py.File(data_file, 'w') as file:
     file.create_dataset('train_data',  data=x_train)

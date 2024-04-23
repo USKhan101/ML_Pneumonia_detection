@@ -1,6 +1,7 @@
 import cv2
 import h5py
 import numpy as np
+import seaborn as sns
 from scipy import stats
 import matplotlib.pyplot as plt
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
@@ -65,6 +66,22 @@ x_train_augmented = x_train_augmented[indices]
 y_train_augmented = y_train_augmented[indices]
 
 x_train_augmented = np.squeeze(x_train_augmented, axis=-1)
+
+## Count bar plot for dataset
+def count_plot (label):
+    l= []
+    
+    for i in label:
+        if (i == 0):
+            l.append("Normal")
+        else:
+            l.append("Pneumonia")
+    
+    sns.set_style('darkgrid')
+    sns.countplot(x=l)
+    plt.show()
+
+count_plot (y_train_augmented)
 
 augm_datapath = './processed_data/augmented_traindata.h5'
 
