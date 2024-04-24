@@ -5,7 +5,8 @@ import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-path = './chest_xray/'
+#path = './chest_xray/'
+path = './chest_xray_new/'
 data_file = './processed_data/normalized_rawdata.h5'
 
 # define paths
@@ -23,6 +24,7 @@ def array_data (data_dir):
         class_num = labels.index(label)
 
         for img in os.listdir(path):
+            # Reading images in gray scale
             img_arr = cv2.imread(os.path.join(path, img), cv2.IMREAD_GRAYSCALE)
             resized_arr = cv2.resize(img_arr, (img_size, img_size))
             data.append ([resized_arr, class_num])
@@ -53,6 +55,7 @@ count_plot (train_data)
 count_plot (val_data)
 count_plot (test_data)
 
+# Divide the data and labels
 x_train = []
 y_train = []
 
@@ -74,7 +77,7 @@ for feature, label in val_data:
     x_val.append(feature)
     y_val.append(label)
 
-# Normalization
+# Normalizing Data
 x_train = np.array(x_train) / 255.0
 x_val = np.array(x_val) / 255.0
 x_test = np.array(x_test) / 255.0
@@ -83,6 +86,7 @@ y_train = np.array(y_train)
 y_val = np.array(y_val)
 y_test = np.array(y_test)
 
+# Show random grayscale x-ray images from train, test, val dataset
 plt.figure(figsize=(10,8))
 
 plt.subplot(2, 3, 1) 
@@ -109,11 +113,12 @@ plt.subplot(2, 3, 6)
 plt.imshow(x_test[-1])
 plt.title('Test_data: PNEUMONIA')
 
-#pie plot
+#pie plot to show the ratio of train, val and test dataset
 plt.figure()
 plt.pie([len(x_train), len(x_val), len(x_test)], labels=['train', 'validation', 'test'], autopct='%.1f%%', colors=['orange', 'red', 'lightblue'], explode=(0.05, 0, 0))
 plt.show()
 
+# Save the normalized raw dataset into h5 file
 with h5py.File(data_file, 'w') as file:
     file.create_dataset('train_data',  data=x_train)
     file.create_dataset('train_label', data=y_train) 

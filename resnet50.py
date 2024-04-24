@@ -137,3 +137,40 @@ def train(model, train_loader, val_loader, criterion, optimizer, num_epochs=50):
 train(model, train_loader, val_loader, criterion, optimizer)
 
 print ("Ended in", time.time() - start_time, "seconds.")
+
+
+############## Extra ##################
+initial_bias = np.log([COUNT_PNEUMONIA/COUNT_NORMAL])
+initial_bias
+
+weight_for_0 = (1 / COUNT_NORMAL)*(TRAIN_IMG_COUNT)/2.0 
+weight_for_1 = (1 / COUNT_PNEUMONIA)*(TRAIN_IMG_COUNT)/2.0
+
+class_weight = {0: weight_for_0, 1: weight_for_1}
+
+print('Weight for class 0: {:.2f}'.format(weight_for_0))
+print('Weight for class 1: {:.2f}'.format(weight_for_1))
+
+with strategy.scope():
+    model = build_model()
+
+    METRICS = [
+        'accuracy',
+        tf.keras.metrics.Precision(name='precision'),
+        tf.keras.metrics.Recall(name='recall')
+    ]
+    
+    model.compile(
+        optimizer='adam',
+        loss='binary_crossentropy',
+        metrics=METRICS
+    )
+
+history = model.fit(
+    train_ds,
+    steps_per_epoch=TRAIN_IMG_COUNT // BATCH_SIZE,
+    epochs=EPOCHS,
+    validation_data=val_ds,
+    validation_steps=VAL_IMG_COUNT // BATCH_SIZE,
+    class_weight=class_weight,
+)
