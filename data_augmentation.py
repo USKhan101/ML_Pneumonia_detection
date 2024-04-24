@@ -67,6 +67,32 @@ y_train_augmented = y_train_augmented[indices]
 
 x_train_augmented = np.squeeze(x_train_augmented, axis=-1)
 
+plt.figure(figsize=(10,8))
+
+plt.subplot(2, 3, 1) 
+plt.imshow(x_normal[0])
+plt.title('Train_data 1: ORIGINAL')
+
+plt.subplot(2, 3, 2) 
+plt.imshow(augmented_images[0])
+plt.title('Train_data 1: AUGMENTED 1')
+
+plt.subplot(2, 3, 3) 
+plt.imshow(augmented_images[1])
+plt.title('Train_data 1: AUGMENTED 2')
+
+plt.subplot(2, 3, 4) 
+plt.imshow(x_normal[1])
+plt.title('Train_data 2: ORIGINAL')
+
+plt.subplot(2, 3, 5) 
+plt.imshow(augmented_images[2])
+plt.title('Train_data 2: AUGMENTED 1')
+
+plt.subplot(2, 3, 6) 
+plt.imshow(augmented_images[3])
+plt.title('Train_data 2: AUGMENTED 2')
+
 ## Count bar plot for dataset
 def count_plot (label):
     l= []
@@ -76,7 +102,7 @@ def count_plot (label):
             l.append("Normal")
         else:
             l.append("Pneumonia")
-    
+    plt.figure()
     sns.set_style('darkgrid')
     sns.countplot(x=l)
     plt.show()

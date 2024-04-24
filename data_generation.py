@@ -83,30 +83,34 @@ y_train = np.array(y_train)
 y_val = np.array(y_val)
 y_test = np.array(y_test)
 
-plt.subplot(1, 2, 1) 
+plt.figure(figsize=(10,8))
+
+plt.subplot(2, 3, 1) 
 plt.imshow(x_train[0])
 plt.title('Train_data: NORMAL')
 
-plt.subplot(1, 2, 2) 
+plt.subplot(2, 3, 4) 
 plt.imshow(x_train[-1])
 plt.title('Train_data: PNEUMONIA')
 
-plt.subplot(2, 2, 1) 
+plt.subplot(2, 3, 2) 
 plt.imshow(x_val[0])
 plt.title('Val_data: NORMAL')
 
-plt.subplot(2, 2, 2) 
+plt.subplot(2, 3, 5) 
 plt.imshow(x_val[-1])
 plt.title('Val_data: PNEUMONIA')
 
-plt.subplot(3, 2, 1) 
+plt.subplot(2, 3, 3) 
 plt.imshow(x_test[0])
 plt.title('Test_data: NORMAL')
 
-plt.subplot(3, 2, 2) 
+plt.subplot(2, 3, 6) 
 plt.imshow(x_test[-1])
 plt.title('Test_data: PNEUMONIA')
 
+#pie plot
+plt.figure()
 plt.pie([len(x_train), len(x_val), len(x_test)], labels=['train', 'validation', 'test'], autopct='%.1f%%', colors=['orange', 'red', 'lightblue'], explode=(0.05, 0, 0))
 plt.show()
 
