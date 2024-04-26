@@ -5,128 +5,72 @@ from scipy import stats
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import StandardScaler
 
-file_path = './processed_data/augmented_traindata.h5'
-test_path = './processed_data/normalized_rawdata.h5'
+#file_path = './processed_data/augmented_traindata.h5'
+data_path = './processed_data/normalized_rawdata.h5'
 
 ## Reading data from file
-with h5py.File(file_path, 'r') as file:
-    x_train = file['augmented_train_data'][:]
-    y_train = file['augmented_train_label'][:]
+#with h5py.File(file_path, 'r') as file:
+#    x_train = file['augmented_train_data'][:]
+#    y_train = file['augmented_train_label'][:]
 
-with h5py.File(test_path, 'r') as file1:
+with h5py.File(data_path, 'r') as file1:
+    x_train = file['train_data'][:]
+    y_train = file['train_label'][:]
+
     x_test = file1['test_data'][:]
     y_test = file1['test_label'][:]
 
 x_train = x_train.astype(np.uint8)
 x_test = x_test.astype(np.uint8)
+
+x_train_flat = x_train.reshape(x_train.shape[0], -1)
+x_test_flat = x_test.reshape(x_test.shape[0], -1)
+
 ################  Train Data Feature Extraction  #######################
 
-def feature_extraction(image):
-
-
-# Feature1: Variance of each image
-variances = np.var(x_train, axis=(1, 2)) 
-variances = variances.reshape ((-1, 1))
-
-# Feature2: Mean of each image
-means = np.mean(x_train, axis=(1, 2))
-means = means.reshape ((-1, 1))
-
-# Feature3: Standard Deviation of each image
-stds = np.std(x_train, axis=(1, 2))
-stds = stds.reshape ((-1, 1))
-
-# Feature4: Skewness of each image 
-skewness = np.array([stats.skew(image.ravel()) for image in x_train])
-skewness = skewness.reshape ((-1, 1))
-
-# Feature5: Kurtosis of each image 
-kurtosis = np.array([stats.kurtosis(image.ravel()) for image in x_train])
-kurtosis = kurtosis.reshape ((-1, 1))
-
-# Feature6: Entropy of each image 
 def calculate_entropy(image):
     histogram, _ = np.histogram(image, bins=256, range=(0, 256))
     histogram_normalized = histogram / histogram.sum()
     histogram_normalized = histogram_normalized[histogram_normalized > 0] # Avoid zero probabilities
     return stats.entropy(histogram_normalized, base=2)
 
-# Calculating entropy for each image in the dataset
-entropies = np.array([calculate_entropy(image) for image in x_train])
-entropies = entropies.reshape ((-1, 1))
+def feature_extract(image):
+    # Feature1: Variance of each image
+    var = np.var(image)
 
-# Feature7: Canny Edge detection
-canny_edge = np.array([cv2.Canny(image, 140, 200) for image in x_train])
-canny_edge = canny_edge.reshape (canny_edge.shape[0], -1)
+    # Feature2: Mean of each image
+    mean = np.mean(image)
 
-# Feature8: Sobel X
-sobel_x = np.array([cv2.Sobel(image,cv2.CV_8UC1,1,0,ksize=5) for image in x_train])
-sobel_x = sobel_x.reshape(sobel_x.shape[0], -1)
+    # Feature3: Standard Deviation of each image
+    std = np.std(image)
 
-# Feature9: Sobel Y
-sobel_y = np.array([cv2.Sobel(image,cv2.CV_8UC1,0,1,ksize=5) for image in x_train])
-sobel_y = sobel_y.reshape(sobel_y.shape[0], -1)
+    # Feature4: Skewness of each image 
+    skewness = stats.skew(image.ravel())
 
-# Feature10: Binary threshold
-bin_thresh = np.array([cv2.threshold(image, 120, 255, cv2.THRESH_BINARY)[1] for image in x_train])
-bin_thresh = bin_thresh.reshape(bin_thresh.shape[0], -1)
+    # Feature5: Kurtosis of each image 
+    kurtosis = stats.kurtosis(image.ravel())
 
-## Combined Features
-train_features = np.hstack((variances, means, stds, skewness, kurtosis, entropies, canny_edge, sobel_x, sobel_y, bin_thresh))
+    # Feature6: Entropy of each image 
+    entropies = calculate_entropy(image)
 
-print(train_features.shape)
+    # Feature7: Canny Edge detection
+    canny_edge = cv2.Canny(image, 140, 200) 
+    canny_edge_count = np.sum(canny_edge > 0)
+
+    # Feature8: Otsu binary threshold
+    bin_thresh = np.array([cv2.threshold(image, 120, 255, cv2.THRESH_BINARY+cv2.THRESH_OTSU)[1] for image in x_train])
+    bin_thresh = bin_thresh.reshape(bin_thresh.shape[0], -1)
+
+    ## Combined Features
+    train_features = np.hstack((variances, means, stds, skewness, kurtosis, entropies, canny_edge, sobel_x, sobel_y, bin_thresh))
+    
+    print(train_features.shape)
 
 scaler = StandardScaler()
 scaled_features = scaler.fit_transform(train_features)
 
-#################  Test Data Feature Extraction  #######################
+## Train, val and test data
 
-# Feature1: Variance of each image
-test_variances = np.var(x_test, axis=(1, 2)) 
-test_variances = test_variances.reshape ((-1, 1))
-
-# Feature2: Mean of each image
-test_means = np.mean(x_test, axis=(1, 2))
-test_means = test_means.reshape ((-1, 1))
-
-# Feature3: Standard Deviation of each image
-test_stds = np.std(x_test, axis=(1, 2))
-test_stds = test_stds.reshape ((-1, 1))
-
-# Feature4: Skewness of each image 
-test_skewness = np.array([stats.skew(image.ravel()) for image in x_test])
-test_skewness = test_skewness.reshape ((-1, 1))
-
-# Feature5: Kurtosis of each image 
-test_kurtosis = np.array([stats.kurtosis(image.ravel()) for image in x_test])
-test_kurtosis = test_kurtosis.reshape ((-1, 1))
-
-# Feature6: Entropy of each image 
-test_entropies = np.array([calculate_entropy(image) for image in x_test])
-test_entropies = test_entropies.reshape ((-1, 1))
-
-# Feature7: Canny Edge detection
-test_canny_edge = np.array([cv2.Canny(image, 140, 200) for image in x_test])
-test_canny_edge = test_canny_edge.reshape (test_canny_edge.shape[0], -1)
-
-# Feature8: Sobel X
-test_sobel_x = np.array([cv2.Sobel(image,cv2.CV_8UC1,1,0,ksize=5) for image in x_test])
-test_sobel_x = test_sobel_x.reshape(test_sobel_x.shape[0], -1)
-
-# Feature9: Sobel Y
-test_sobel_y = np.array([cv2.Sobel(image,cv2.CV_8UC1,0,1,ksize=5) for image in x_test])
-test_sobel_y = test_sobel_y.reshape(test_sobel_y.shape[0], -1)
-
-# Feature10: Binary threshold
-test_bin_thresh = np.array([cv2.threshold(image, 120, 255, cv2.THRESH_BINARY)[1] for image in x_test])
-test_bin_thresh = test_bin_thresh.reshape(test_bin_thresh.shape[0], -1)
-
-## Combined Features
-test_features = np.hstack((test_variances, test_means, test_stds, test_skewness, test_kurtosis, test_entropies, test_canny_edge, test_sobel_x, test_sobel_y, test_bin_thresh))
-
-print(test_features.shape)
-
-scaled_test_features = scaler.transform(test_features)
 
 out_path = './processed_data/feature_data.h5'
 

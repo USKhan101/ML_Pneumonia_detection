@@ -13,6 +13,8 @@ with h5py.File(file_path, 'r') as file:
     x_train = file['train_data'][:]
     y_train = file['train_label'][:]
 
+print (x_train.dtype)
+
 #### Step1: Z-score based outlier detection
 
 # Calculate mean intensity for each image
@@ -40,6 +42,7 @@ sns.histplot(means[good_indices], bins=30, kde=True, color='red', label='Filtere
 plt.title('Comparison of Image Mean Intensities Before and After Z-score Outlier Removal')
 plt.xlabel('Mean Intensity')
 plt.legend()
+plt.savefig('mean_zremoval.png', dpi=300, bbox_inches='tight')
 plt.show()
 
 ####Step:2 IQR outlier detection
@@ -75,7 +78,10 @@ sns.histplot(means1[good_indices], bins=30, kde=True, color='red', label='Filter
 plt.title('Comparison of Image Mean Intensities Before and After IQR Outlier Removal')
 plt.xlabel('Mean Intensity')
 plt.legend()
+plt.savefig('mean_IQRremoval.png', dpi=300, bbox_inches='tight')
 plt.show()
+
+print (x_train_IQRfiltered.dtype)
 
 # Save data after outliers removal
 out_path = './processed_data/outlier_removed_traindata.h5'
@@ -84,7 +90,7 @@ with h5py.File(out_path, 'w') as file:
     file.create_dataset('train_data', data=x_train_IQRfiltered)
     file.create_dataset('train_label', data=y_train_IQRfiltered)
 
-def plot_aggregated_image_data(data):
+def plot_aggregated_image_data(data, name):
     # Calculate the mean or median pixel value for each image
     image_means = np.mean(data.reshape(data.shape[0], -1), axis=1)
 
@@ -92,14 +98,15 @@ def plot_aggregated_image_data(data):
     sns.boxplot(x=image_means)
     plt.title('Distribution of Mean Pixel Intensities Across All Images')
     plt.xlabel('Mean Pixel Intensity')
+    plt.savefig(f'aggr_image_{name}.png', dpi=300, bbox_inches='tight')
     plt.show()
 
 # Visualizing the distribution of mean pixel intensities
-plot_aggregated_image_data(x_train)
-plot_aggregated_image_data(x_train_IQRfiltered)
+plot_aggregated_image_data(x_train, 'train_data')
+plot_aggregated_image_data(x_train_IQRfiltered, 'filtered_data')
 
 
-def plot_category_distribution(data, labels):
+def plot_category_distribution(data, labels, name):
     # Calculate the mean pixel values for each image
     image_means = np.mean(data.reshape(data.shape[0], -1), axis=1)
 
@@ -108,8 +115,9 @@ def plot_category_distribution(data, labels):
     plt.title('Mean Pixel Intensity Distribution by Category')
     plt.xlabel('Mean Pixel Intensity')
     plt.ylabel('Category')
+    plt.savefig(f'category_image_{name}.png', dpi=300, bbox_inches='tight')
     plt.show()
 
 # Visualizing the distribution of mean pixel intensities for each category
-plot_category_distribution(x_train, y_train)
-plot_category_distribution(x_train_IQRfiltered, y_train_IQRfiltered)
+plot_category_distribution(x_train, y_train, 'train_data')
+plot_category_distribution(x_train_IQRfiltered, y_train_IQRfiltered, 'filtered_data')

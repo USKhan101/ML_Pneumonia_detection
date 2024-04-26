@@ -13,18 +13,22 @@ with h5py.File(file_path, 'r') as file:
     x_train = file['train_data'][:]
     y_train = file['train_label'][:]
 
+print (x_train.dtype)
+print (y_train.dtype)
+
 # Configure the ImageDataGenerator to augment images
 data_gen = ImageDataGenerator(
     rotation_range=30,
     width_shift_range=0.1,
     height_shift_range=0.1,
     shear_range=0.1,
-    zoom_range=0.2,
+    zoom_range=0.2
     #horizontal_flip=True,
-    brightness_range=[0.5,1.2])
+    #brightness_range=[0.5,1.2]
+    )
 
 # Function to augment images based on the label
-def augment_images(x_data, label, num_augments=4):
+def augment_images(x_data, label, num_augments=3):
     augmented_images = []
     augmented_labels = []
 
@@ -54,13 +58,17 @@ y_train_augmented = y_train_augmented[indices]
 # Squeeze out the channel dimension
 x_train_augmented = np.squeeze(x_train_augmented, axis=-1)
 
+print (x_train_augmented.dtype)
+print (y_train_augmented.dtype)
+
 # Plot some of original and augmented images
 plt.figure(figsize=(10, 8))
-for i in range(6):
-    plt.subplot(2, 3, i + 1)
+for i in range(8):
+    plt.subplot(2, 4, i + 1)
     plt.imshow(x_train_augmented[i], cmap='gray')
-    plt.title(f'Train_data {i + 1}: {"NORMAL" if y_train_augmented[i] == 0 else "PNEUMONIA"}')
+    plt.title(f'Augmented_data {i + 1}')
 plt.tight_layout()
+plt.savefig('augmented_data.png', dpi=300, bbox_inches='tight')
 plt.show()
 
 # Count bar plot for dataset
@@ -68,10 +76,13 @@ def count_plot(label):
     l = ["Normal" if i == 0 else "Pneumonia" for i in label]
     plt.figure()
     sns.set_style('darkgrid')
-    sns.countplot(x=l)
+    ax = sns.countplot(x=l)
+    for p in ax.patches:
+        ax.annotate(f'{int(p.get_height())}', (p.get_x() + p.get_width() / 2., p.get_height()), ha = 'center', va = 'center', xytext = (0, 10), textcoords = 'offset points')
     plt.show()
 
 count_plot(y_train_augmented)
+plt.savefig('augmented_barplot.png', dpi=300, bbox_inches='tight')
 
 # Save the augmented training data in another .h5 file
 augm_datapath = './processed_data/augmented_traindata.h5'
