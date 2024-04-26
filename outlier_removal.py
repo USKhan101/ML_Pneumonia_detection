@@ -13,7 +13,21 @@ with h5py.File(file_path, 'r') as file:
     x_train = file['train_data'][:]
     y_train = file['train_label'][:]
 
+    x_val = file['val_data'][:]
+    y_val = file['val_label'][:]
+
+    x_test = file['test_data'][:]
+    y_test = file['test_label'][:]
+
 print (x_train.dtype)
+
+def count_plot(label):
+    l = ["Normal" if i == 0 else "Pneumonia" for i in label]
+    plt.figure()
+    sns.set_style('darkgrid')
+    ax = sns.countplot(x=l)
+    for p in ax.patches:
+        ax.annotate(f'{int(p.get_height())}', (p.get_x() + p.get_width() / 2., p.get_height()), ha = 'center', va = 'center', xytext = (0, 10), textcoords = 'offset points')
 
 #### Step1: Z-score based outlier detection
 
@@ -91,7 +105,7 @@ with h5py.File(out_path, 'w') as file:
     file.create_dataset('train_label', data=y_train_IQRfiltered)
 
 def plot_aggregated_image_data(data, name):
-    # Calculate the mean or median pixel value for each image
+    # Calculate the mean pixel value for each image
     image_means = np.mean(data.reshape(data.shape[0], -1), axis=1)
 
     plt.figure(figsize=(12, 6))
@@ -121,3 +135,20 @@ def plot_category_distribution(data, labels, name):
 # Visualizing the distribution of mean pixel intensities for each category
 plot_category_distribution(x_train, y_train, 'train_data')
 plot_category_distribution(x_train_IQRfiltered, y_train_IQRfiltered, 'filtered_data')
+
+# Count plot for training data after outlier removal
+plt.figure(figsize=(12, 10))
+
+plt.subplot(1, 2, 1)
+count_plot(y_train_IQRfiltered)
+plt.title('Filtered Train Data')
+
+#pie plot to show the ratio of train, val and test dataset
+plt.subplot(1, 2, 2)
+plt.pie([len(y_train_IQRfiltered), len(y_val), len(y_test)], labels=['train', 'validation', 'test'], autopct='%1.1f%%', colors=['orange', 'red', 'lightblue'], explode=(0.05, 0, 0))
+plt.title('Data Ratio')
+plt.tight_layout()
+
+plt.savefig('outlier_data_count.png', dpi=300, bbox_inches='tight')
+plt.show()
+
