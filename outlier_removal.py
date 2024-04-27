@@ -23,7 +23,6 @@ print (x_train.dtype)
 
 def count_plot(label):
     l = ["Normal" if i == 0 else "Pneumonia" for i in label]
-    plt.figure()
     sns.set_style('darkgrid')
     ax = sns.countplot(x=l)
     for p in ax.patches:
@@ -137,7 +136,7 @@ plot_category_distribution(x_train, y_train, 'train_data')
 plot_category_distribution(x_train_IQRfiltered, y_train_IQRfiltered, 'filtered_data')
 
 # Count plot for training data after outlier removal
-plt.figure(figsize=(12, 10))
+plt.figure(figsize=(15, 6))
 
 plt.subplot(1, 2, 1)
 count_plot(y_train_IQRfiltered)

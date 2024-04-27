@@ -5,26 +5,27 @@ from scipy import stats
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import StandardScaler
 
-#file_path = './processed_data/augmented_traindata.h5'
 data_path = './processed_data/normalized_rawdata.h5'
 
-## Reading data from file
-#with h5py.File(file_path, 'r') as file:
-#    x_train = file['augmented_train_data'][:]
-#    y_train = file['augmented_train_label'][:]
-
-with h5py.File(data_path, 'r') as file1:
+with h5py.File(data_path, 'r') as file:
     x_train = file['train_data'][:]
     y_train = file['train_label'][:]
 
-    x_test = file1['test_data'][:]
-    y_test = file1['test_label'][:]
+    x_val = file['val_data'][:]
+    y_val = file['val_label'][:]
 
-x_train = x_train.astype(np.uint8)
-x_test = x_test.astype(np.uint8)
+    x_test = file['test_data'][:]
+    y_test = file['test_label'][:]
 
-x_train_flat = x_train.reshape(x_train.shape[0], -1)
-x_test_flat = x_test.reshape(x_test.shape[0], -1)
+print (x_train.dtype)
+print (y_train.dtype)
+print (x_val.dtype)
+print (y_val.dtype)
+print (x_test.dtype)
+print (y_test.dtype)
+
+#x_train_flat = x_train.reshape(x_train.shape[0], -1)
+#x_test_flat = x_test.reshape(x_test.shape[0], -1)
 
 ################  Train Data Feature Extraction  #######################
 
@@ -35,6 +36,7 @@ def calculate_entropy(image):
     return stats.entropy(histogram_normalized, base=2)
 
 def feature_extract(image):
+    image = np.uint8(image*255)
     # Feature1: Variance of each image
     var = np.var(image)
 
@@ -58,40 +60,49 @@ def feature_extract(image):
     canny_edge_count = np.sum(canny_edge > 0)
 
     # Feature8: Otsu binary threshold
-    bin_thresh = np.array([cv2.threshold(image, 120, 255, cv2.THRESH_BINARY+cv2.THRESH_OTSU)[1] for image in x_train])
-    bin_thresh = bin_thresh.reshape(bin_thresh.shape[0], -1)
+    bin_thresh = cv2.threshold(image, 120, 255, cv2.THRESH_BINARY+cv2.THRESH_OTSU)[1]
+    bin_thresh = np.sum(bin_thresh > 0)
 
     ## Combined Features
-    train_features = np.hstack((variances, means, stds, skewness, kurtosis, entropies, canny_edge, sobel_x, sobel_y, bin_thresh))
-    
-    print(train_features.shape)
+    features = np.array([var, mean, std, skewness, kurtosis, entropies, canny_edge, bin_thresh], dtype=object).astype(np.float32)
 
-scaler = StandardScaler()
-scaled_features = scaler.fit_transform(train_features)
+    return features
+    
+# Feature data for x_train, x_val, x_test
+
+def data_preprocess (data):
+    processed_data = []
+
+    for img in data:
+        # Extract features
+        features = feature_extract(img)
+        
+        # Flatten the image data
+        flat_image_data = img.flatten()
+        
+        # Concatenate features with image data
+        full_features = np.concatenate((flat_image_data, features))
+        
+        # Append to the new dataset
+        processed_data.append(full_features)
+
+    return processed_data
 
 ## Train, val and test data
+train_feature = np.array (data_preprocess(x_train)).astype(np.float32)
+val_feature = np.array (data_preprocess(x_val)).astype(np.float32)  
+test_feature = np.array (data_preprocess(x_test)).astype(np.float32)
 
-
+# Save the feature data
 out_path = './processed_data/feature_data.h5'
 
-## Reading data from file
 with h5py.File(out_path, 'w') as file:
-    file.create_dataset('train_feature', data=scaled_features)
+    file.create_dataset('train_feature', data=train_feature)
     file.create_dataset('train_label', data=y_train)
 
-    file.create_dataset('test_feature', data=scaled_test_features)
+    file.create_dataset('val_feature', data=val_feature)
+    file.create_dataset('val_label', data=y_val)
+
+    file.create_dataset('test_feature', data=test_feature)
     file.create_dataset('test_label', data=y_test)
 
-## Plot the histogram of pixel values for the first image
-#plt.hist(x_train[0].ravel(), bins=50, color='gray', alpha=0.75)
-#plt.title('Pixel Value Distribution')
-#plt.xlabel('Pixel Intensity')
-#plt.ylabel('Frequency')
-#plt.show()
-#
-## Reshape to feed into random forest
-#x_train_augmented = x_train_augmented.reshape(x_train_augmented.shape[0], -1)
-#x_test = x_test.reshape(x_test.shape[0], -1)
-#
-#print (x_train_augmented.shape)
-#print (x_test.shape)

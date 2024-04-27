@@ -26,11 +26,6 @@ def array_data (data_dir):
         for img in os.listdir(path):
             # Reading images in gray scale
             img_arr = cv2.imread(os.path.join(path, img), cv2.IMREAD_GRAYSCALE)
-            # Create a CLAHE for better contrast
-            clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
-            # Apply CLAHE to the grayscale image
-            clahe_image = clahe.apply(img_arr)
-
             resized_arr = cv2.resize(img_arr, (img_size, img_size))
             data.append ([resized_arr, class_num])
 
@@ -170,7 +165,50 @@ plt.pie([len(y_train), len(y_val), len(y_test)], labels=['train', 'validation', 
 plt.savefig('new_pie_chart.png', dpi=300, bbox_inches='tight')
 plt.show()
 
-# Save the normalized raw dataset into h5 file
+# Plot the histogram of pixel values from each dataset
+plt.figure(figsize=(10,8))
+
+plt.subplot(2, 3, 1) 
+plt.hist(x_train[0].ravel(), bins=50, color='gray', alpha=0.75)
+plt.xlabel('Pixel Intensity')
+plt.ylabel('Frequency')
+plt.title('Train_data: NORMAL')
+
+plt.subplot(2, 3, 4) 
+plt.hist(x_train[-1].ravel(), bins=50, color='gray', alpha=0.75)
+plt.xlabel('Pixel Intensity')
+plt.ylabel('Frequency')
+plt.title('Train_data: PNEUMONIA')
+
+plt.subplot(2, 3, 2) 
+plt.hist(x_val[0].ravel(), bins=50, color='gray', alpha=0.75)
+plt.xlabel('Pixel Intensity')
+plt.ylabel('Frequency')
+plt.title('Val_data: NORMAL')
+
+plt.subplot(2, 3, 5) 
+plt.hist(x_val[-1].ravel(), bins=50, color='gray', alpha=0.75)
+plt.xlabel('Pixel Intensity')
+plt.ylabel('Frequency')
+plt.title('Val_data: PNEUMONIA')
+
+plt.subplot(2, 3, 3) 
+plt.hist(x_test[0].ravel(), bins=50, color='gray', alpha=0.75)
+plt.xlabel('Pixel Intensity')
+plt.ylabel('Frequency')
+plt.title('Test_data: NORMAL')
+
+plt.subplot(2, 3, 6) 
+plt.hist(x_test[-1].ravel(), bins=50, color='gray', alpha=0.75)
+plt.xlabel('Pixel Intensity')
+plt.ylabel('Frequency')
+plt.title('Test_data: PNEUMONIA')
+
+plt.tight_layout()
+plt.savefig('new_image_histogram.png', dpi=300, bbox_inches='tight')
+plt.show()
+
+# Save the normalized dataset into h5 file
 with h5py.File(data_file, 'w') as file:
     file.create_dataset('train_data',  data=x_train)
     file.create_dataset('train_label', data=y_train) 

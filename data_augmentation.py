@@ -7,11 +7,19 @@ import matplotlib.pyplot as plt
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
 file_path = './processed_data/outlier_removed_traindata.h5'
+data_path = './processed_data/normalized_rawdata.h5'
 
 ## Reading raw train data from file
 with h5py.File(file_path, 'r') as file:
     x_train = file['train_data'][:]
     y_train = file['train_label'][:]
+
+with h5py.File(data_path, 'r') as file1:
+    x_val = file1['val_data'][:]
+    y_val = file1['val_label'][:]
+
+    x_test = file1['test_data'][:]
+    y_test = file1['test_label'][:]
 
 print (x_train.dtype)
 print (y_train.dtype)
@@ -23,8 +31,6 @@ data_gen = ImageDataGenerator(
     height_shift_range=0.1,
     shear_range=0.1,
     zoom_range=0.2
-    #horizontal_flip=True,
-    #brightness_range=[0.5,1.2]
     )
 
 # Function to augment images based on the label
@@ -79,10 +85,21 @@ def count_plot(label):
     ax = sns.countplot(x=l)
     for p in ax.patches:
         ax.annotate(f'{int(p.get_height())}', (p.get_x() + p.get_width() / 2., p.get_height()), ha = 'center', va = 'center', xytext = (0, 10), textcoords = 'offset points')
-    plt.show()
 
+# Count plot for training data after augmentation
+plt.figure(figsize=(12, 10))
+
+plt.subplot(1, 2, 1)
 count_plot(y_train_augmented)
-plt.savefig('augmented_barplot.png', dpi=300, bbox_inches='tight')
+plt.title('Augmented Data')
+
+#pie plot to show the ratio of train, val and test dataset
+plt.subplot(1, 2, 2)
+plt.pie([len(y_train_augmented), len(y_val), len(y_test)], labels=['train', 'validation', 'test'], autopct='%1.1f%%', colors=['orange', 'red', 'lightblue'], explode=(0.05, 0, 0))
+plt.title('Augmented Data')
+
+plt.savefig('Augmented_data_count.png', dpi=300, bbox_inches='tight')
+plt.show()
 
 # Save the augmented training data in another .h5 file
 augm_datapath = './processed_data/augmented_traindata.h5'

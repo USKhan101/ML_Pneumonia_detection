@@ -10,7 +10,9 @@ outlier_removal.py: The input of the file will be the raw training data and it o
 
 data_augmentation.py: This file does augmentation of the training data after outlier removal. Generates 4 augmented images for each training image. We will augmnet only the training data for training the model well.
 
-feature_extraction.py: outputs extracted and stacked features from the image data
+data_enhance.py: The input of the file is train data outlier removal. it will enhance contrast, reduce noise and sharp the image data.
+
+feature_extraction.py: The file outputs extracted and stacked features from the enhanced image data.
 
 Model files:
 
