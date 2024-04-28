@@ -35,12 +35,6 @@ train_data = array_data (train_dir)
 val_data = array_data (val_dir)
 test_data = array_data (test_dir)
 
-print (train_data.shape)
-
-print (val_data.shape)
-
-print (test_data.shape)
-
 ## Count bar plot for dataset
 def count_plot (data):
     l= []
@@ -91,17 +85,14 @@ y_train = np.array(y_train).astype(np.uint8)
 y_val = np.array(y_val).astype(np.uint8)
 y_test = np.array(y_test).astype(np.uint8)
 
-print (x_train.dtype)
-print (y_train.dtype)
-
 print (x_train.shape)
 print (y_train.shape)
 
-print (x_val.shape)
-print (y_val.shape)
-
 print (x_test.shape)
 print (y_test.shape)
+
+print (x_val.shape)
+print (y_val.shape)
 
 # Plot count bar and pie chart
 plt.figure(figsize=(18, 12))
@@ -140,7 +131,7 @@ plt.pie(test_counts[1], labels=['Normal' if label == 0 else 'Pneumonia' for labe
 plt.title('Testing Data')
 
 plt.tight_layout()
-plt.savefig('new_count_plot.png', dpi=300, bbox_inches='tight')
+plt.savefig('./plots/new_count_plot.pdf', dpi=300, bbox_inches='tight')
 plt.show()
 
 # Show random grayscale x-ray images from train, test, val dataset
@@ -171,13 +162,13 @@ plt.imshow(x_test[-1])
 plt.title('Test_data: PNEUMONIA')
 
 plt.tight_layout()
-plt.savefig('new_rand_image.png', dpi=300, bbox_inches='tight')
+plt.savefig('./plots/new_rand_image.pdf', dpi=300, bbox_inches='tight')
 plt.show()
 
 #pie plot to show the ratio of train, val and test dataset
 plt.figure()
 plt.pie([len(y_train), len(y_val), len(y_test)], labels=['train', 'validation', 'test'], autopct='%1.1f%%', colors=['orange', 'red', 'lightblue'], explode=(0.05, 0, 0))
-plt.savefig('new_pie_chart.png', dpi=300, bbox_inches='tight')
+plt.savefig('./plots/new_pie_chart.pdf', dpi=300, bbox_inches='tight')
 plt.show()
 
 # Plot the histogram of pixel values from each dataset
@@ -220,7 +211,7 @@ plt.ylabel('Frequency')
 plt.title('Test_data: PNEUMONIA')
 
 plt.tight_layout()
-plt.savefig('new_image_histogram.png', dpi=300, bbox_inches='tight')
+plt.savefig('./plots/new_image_histogram.pdf', dpi=300, bbox_inches='tight')
 plt.show()
 
 # Save the normalized dataset into h5 file

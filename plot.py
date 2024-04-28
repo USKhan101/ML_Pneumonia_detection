@@ -27,28 +27,6 @@ plt.ylabel('Probability Density')
 plt.legend(loc='upper left')
 
 plt.grid(True)
-plt.savefig('z_score_report.png', dpi=300, bbox_inches='tight')
-plt.show()
-
-# Generate sample data
-data = np.random.normal(loc=0, scale=1, size=1000)
-
-plt.figure(figsize=(8, 6))
-sns.boxplot(data, whis=1.5, width=0.5)  # 'whis' parameter is the IQR multiplier for outlier steps
-
-# Calculate IQR and bounds for whiskers
-Q1 = np.percentile(data, 25)
-Q3 = np.percentile(data, 75)
-IQR = Q3 - Q1
-lower_bound = Q1 - 1.5 * IQR
-upper_bound = Q3 + 1.5 * IQR
-
-# Add lines for lower and upper bounds
-plt.axhline(y=lower_bound, color='r', linestyle='--', label='Lower Bound')
-plt.axhline(y=upper_bound, color='g', linestyle='--', label='Upper Bound')
-plt.title('Boxplot with IQR Boundaries')
-plt.xlabel('Data Points')
-plt.legend()
-plt.savefig('IQR_report.png', dpi=300, bbox_inches='tight')
+plt.savefig('./plots/z_score_report.pdf', dpi=300, bbox_inches='tight')
 plt.show()
 

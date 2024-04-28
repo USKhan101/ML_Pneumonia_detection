@@ -55,16 +55,6 @@ x_train = np.float32(data_enhance (x_train) / 255)
 x_val = np.float32(data_enhance (x_val) / 255)
 x_test = np.float32(data_enhance (x_test) / 255)
 
-print (x_train.shape)
-print (x_train.dtype)
-
-## Display the results
-#plt.figure(figsize=(10, 5))
-#plt.subplot(121), plt.imshow(image, cmap='gray'), plt.title('Original Image')
-#plt.subplot(122), plt.imshow(sharpened_image, cmap='gray'), plt.title('Enhanced Image')
-#plt.savefig('enhance.png', dpi=300, bbox_inches='tight')
-#plt.show()
-
 # Show random grayscale x-ray images from train, test, val dataset
 plt.figure(figsize=(10,8))
 
@@ -93,7 +83,7 @@ plt.imshow(x_test[-1])
 plt.title('Test_data: PNEUMONIA')
 
 plt.tight_layout()
-plt.savefig('enhanced_rand_image.png', dpi=300, bbox_inches='tight')
+plt.savefig('./plots/enhanced_rand_image.pdf', dpi=300, bbox_inches='tight')
 plt.show()
 
 # Plot the histogram of pixel values from each dataset
@@ -136,7 +126,7 @@ plt.ylabel('Frequency')
 plt.title('Test_data: PNEUMONIA')
 
 plt.tight_layout()
-plt.savefig('enhanced_image_histogram.png', dpi=300, bbox_inches='tight')
+plt.savefig('./plots/enhanced_image_histogram.pdf', dpi=300, bbox_inches='tight')
 plt.show()
 
 

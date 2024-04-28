@@ -6,23 +6,33 @@ from scipy import stats
 import matplotlib.pyplot as plt
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
-file_path = './processed_data/outlier_removed_traindata.h5'
-data_path = './processed_data/normalized_rawdata.h5'
+data_path = './processed_data/enhanced_data.h5'
 
 ## Reading raw train data from file
-with h5py.File(file_path, 'r') as file:
-    x_train = file['train_data'][:]
-    y_train = file['train_label'][:]
-
 with h5py.File(data_path, 'r') as file1:
+    x_train = file1['train_data'][:]
+    y_train = file1['train_label'][:]
+
     x_val = file1['val_data'][:]
     y_val = file1['val_label'][:]
 
     x_test = file1['test_data'][:]
     y_test = file1['test_label'][:]
 
+print (x_train.shape)
+print (y_train.shape)
 print (x_train.dtype)
 print (y_train.dtype)
+
+print (x_val.shape)
+print (y_val.shape)
+print (x_val.dtype)
+print (y_val.dtype)
+
+print (x_test.shape)
+print (y_test.shape)
+print (x_test.dtype)
+print (y_test.dtype)
 
 # Configure the ImageDataGenerator to augment images
 data_gen = ImageDataGenerator(
@@ -34,7 +44,7 @@ data_gen = ImageDataGenerator(
     )
 
 # Function to augment images based on the label
-def augment_images(x_data, label, num_augments=3):
+def augment_images(x_data, label, num_augments=2):
     augmented_images = []
     augmented_labels = []
 
@@ -69,18 +79,17 @@ print (y_train_augmented.dtype)
 
 # Plot some of original and augmented images
 plt.figure(figsize=(10, 8))
-for i in range(8):
-    plt.subplot(2, 4, i + 1)
+for i in range(6):
+    plt.subplot(2, 3, i + 1)
     plt.imshow(x_train_augmented[i], cmap='gray')
     plt.title(f'Augmented_data {i + 1}')
 plt.tight_layout()
-plt.savefig('augmented_data.png', dpi=300, bbox_inches='tight')
+plt.savefig('./plots/augmented_data.pdf', dpi=300, bbox_inches='tight')
 plt.show()
 
 # Count bar plot for dataset
 def count_plot(label):
     l = ["Normal" if i == 0 else "Pneumonia" for i in label]
-    plt.figure()
     sns.set_style('darkgrid')
     ax = sns.countplot(x=l)
     for p in ax.patches:
@@ -91,14 +100,14 @@ plt.figure(figsize=(12, 10))
 
 plt.subplot(1, 2, 1)
 count_plot(y_train_augmented)
-plt.title('Augmented Data')
+plt.title('Augmented Data Count')
 
 #pie plot to show the ratio of train, val and test dataset
 plt.subplot(1, 2, 2)
 plt.pie([len(y_train_augmented), len(y_val), len(y_test)], labels=['train', 'validation', 'test'], autopct='%1.1f%%', colors=['orange', 'red', 'lightblue'], explode=(0.05, 0, 0))
-plt.title('Augmented Data')
+plt.title('Dataset ratio with augmented Data')
 
-plt.savefig('Augmented_data_count.png', dpi=300, bbox_inches='tight')
+plt.savefig('./plots/Augmented_data_count.pdf', dpi=300, bbox_inches='tight')
 plt.show()
 
 # Save the augmented training data in another .h5 file
