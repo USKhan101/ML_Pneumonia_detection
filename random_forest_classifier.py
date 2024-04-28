@@ -7,23 +7,23 @@ from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay, roc_curve,
 from sklearn.metrics import classification_report, accuracy_score, mean_squared_error
 
 file_path = './processed_data/normalized_rawdata.h5'
-augm_path = './processed_data/augmented_traindata.h5'
-feat_path = './processed_data/feature_data.h5'
+out_path = './processed_data/outlier_removed_traindata.h5'
 enhance_path = './processed_data/enhanced_data.h5'
+augm_path = './processed_data/augmented_traindata.h5'
 
 start_time = time.time()
 
 ## Reading data from file
-with h5py.File(file_path, 'r') as file:
-    #x_train = file['train_data'][:]
-    #y_train = file['train_label'][:]
+with h5py.File(enhance_path, 'r') as file:
+    x_train = file['train_data'][:]
+    y_train = file['train_label'][:]
 
     x_test = file['test_data'][:]
     y_test = file['test_label'][:]
 
-with h5py.File(enhance_path, 'r') as file:
-    x_train = file['train_data'][:]
-    y_train = file['train_label'][:]
+#with h5py.File(augm_path, 'r') as file:
+#    x_train = file['train_data'][:]
+#    y_train = file['train_label'][:]
 
 print (x_train.shape)
 print (y_train.shape)
@@ -31,7 +31,6 @@ print (x_test.shape)
 print (y_test.shape)
 
 # Flattening the data
-# do not need for feature data
 x_train = x_train.reshape(x_train.shape[0], -1)
 x_test = x_test.reshape(x_test.shape[0], -1)
 
@@ -96,7 +95,7 @@ x_test = x_test.reshape(x_test.shape[0], -1)
 
 # Fit the model for found parameters
 
-rf_classifier = RandomForestClassifier(n_estimators=300, max_depth=45, min_samples_split= 10, min_samples_leaf= 1, max_features= 'sqrt', random_state=43)
+rf_classifier = RandomForestClassifier(n_estimators=120, max_depth=45, min_samples_split= 2, min_samples_leaf= 1, max_features= 'sqrt', random_state=43)
 
 rf_classifier.fit(x_train, y_train)
 

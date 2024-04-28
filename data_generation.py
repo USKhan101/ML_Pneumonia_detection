@@ -35,6 +35,12 @@ train_data = array_data (train_dir)
 val_data = array_data (val_dir)
 test_data = array_data (test_dir)
 
+print (train_data.shape)
+
+print (val_data.shape)
+
+print (test_data.shape)
+
 ## Count bar plot for dataset
 def count_plot (data):
     l= []
@@ -78,7 +84,7 @@ x_val = np.array(x_val) / 255.0
 x_test = np.array(x_test) / 255.0
 
 x_train = x_train.astype(np.float32)
-x_val  = x_test.astype(np.float32)
+x_val  = x_val.astype(np.float32)
 x_test = x_test.astype(np.float32)
 
 y_train = np.array(y_train).astype(np.uint8)
@@ -87,6 +93,15 @@ y_test = np.array(y_test).astype(np.uint8)
 
 print (x_train.dtype)
 print (y_train.dtype)
+
+print (x_train.shape)
+print (y_train.shape)
+
+print (x_val.shape)
+print (y_val.shape)
+
+print (x_test.shape)
+print (y_test.shape)
 
 # Plot count bar and pie chart
 plt.figure(figsize=(18, 12))

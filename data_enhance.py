@@ -23,19 +23,32 @@ def data_enhance (data_dir):
     for img in data_dir:
         image = np.uint8(img*255)
         
+        # Median Filtering for noise reduction
+        median_filtered = cv2.medianBlur(image, 5)
+
         # CLAHE for contrast enhancement
         clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
-        clahe_image = clahe.apply(image)
-        
-        # Median Filtering for noise reduction
-        median_filtered = cv2.medianBlur(clahe_image, 5)
-        
-        # Apply Sharpening
+        clahe_image = clahe.apply (median_filtered)
+
+        ## Compute the median pixel value
+        #median_val = np.median(clahe_image)
+        #
+        ### thresholds on the median value 
+        #sigma = 0.33 
+        #threshold1 = int(max(0, (1.0 - sigma) * median_val))
+        #threshold2 = int(min(255, (1.0 + sigma) * median_val))
+        #
+        ## Canny edge detector
+        #canny_image = cv2.Canny(clahe_image, threshold1, threshold2)
+
+        # Sharpening images
         kernel = np.array([[-1, -1, -1],
                            [-1,  9, -1],
                            [-1, -1, -1]])
-        sharpened_image = cv2.filter2D(median_filtered, -1, kernel)
+        sharpened_image = cv2.filter2D(clahe_image, -1, kernel)
+
         data.append (sharpened_image)
+
     return np.array(data)
 
 x_train = np.float32(data_enhance (x_train) / 255)

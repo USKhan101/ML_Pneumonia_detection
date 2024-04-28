@@ -16,15 +16,19 @@ from torch.utils.data import TensorDataset, DataLoader
 from torchvision.transforms import Normalize, Lambda, CenterCrop
 from torchvision.models import resnet50, resnet18, resnet101, ResNet50_Weights
 from torchvision.transforms import Compose, Resize, ToTensor, Normalize, Lambda
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay, roc_curve, auc
+from sklearn.metrics import classification_report, accuracy_score, mean_squared_error
 
 file_path = './processed_data/normalized_rawdata.h5'
 augm_path = './processed_data/augmented_traindata.h5'
+
+num_epochs = 50
 
 start_time = time.time()
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-augmentation = True # To fit the model for raw/ augmented data
+augmentation = False # To fit the model for raw/ augmented data
 
 ## Reading data from file
 with h5py.File(file_path, 'r') as file:
@@ -45,24 +49,33 @@ else:
         x_train = np.array(file['train_data'][:])
         y_train = np.array(file['train_label'][:])
 
-#### Steps due to imbalance dataset #### 
-# Total train image and count train data for each category
-count_normal = np.sum(y_train == 0)
-count_pneumonia = np.sum(y_train == 1)
-total_train = count_normal + count_pneumonia
+print (x_train.shape)
+print (y_train.shape)
 
-print (total_train, count_normal, count_pneumonia)
+print (x_val.shape)
+print (y_val.shape)
 
-# Calculate initial bias for the readout layer
-initial_bias = np.log(count_pneumonia/ count_normal)
-initial_bias_tensor = torch.tensor([initial_bias]).to(device)
+print (x_test.shape)
+print (y_test.shape)
 
-# Calculate class weights
-weight_for_0 = (1 / count_normal) * (total_train) / 2.0
-weight_for_1 = (1 / count_pneumonia) * (total_train) / 2.0
-class_weights = torch.tensor([weight_for_0, weight_for_1]).to(device)
-
-print (class_weights)
+##### Steps due to imbalance dataset #### 
+## Total train image and count train data for each category
+#count_normal = np.sum(y_train == 0)
+#count_pneumonia = np.sum(y_train == 1)
+#total_train = count_normal + count_pneumonia
+#
+#print (total_train, count_normal, count_pneumonia)
+#
+## Calculate initial bias for the readout layer
+#initial_bias = np.log(count_pneumonia/ count_normal)
+#initial_bias_tensor = torch.tensor([initial_bias]).to(device)
+#
+## Calculate class weights
+#weight_for_0 = (1 / count_normal) * (total_train) / 2.0
+#weight_for_1 = (1 / count_pneumonia) * (total_train) / 2.0
+#class_weights = torch.tensor([weight_for_0, weight_for_1]).to(device)
+#
+#print (class_weights)
 
 ##########################################
 
@@ -120,112 +133,131 @@ model.fc = nn.Sequential(
     nn.Linear(32, 2),
     nn.Sigmoid()
 )
+
 last_linear_layer = model.fc[-2]
 
 # Set initial bias for last linear output layer
-last_linear_layer.bias.data.fill_(initial_bias.item())
+#last_linear_layer.bias.data.fill_(initial_bias.item())
 
 # Run model to GPU if available
 model.to(device)
 
 # Optimizer and Loss function configuration
 #criterion = nn.BCELoss()
-criterion = CrossEntropyLoss(weight=class_weights)
-#criterion = CrossEntropyLoss()
+#criterion = CrossEntropyLoss(weight=class_weights)
+
+criterion = CrossEntropyLoss()
 optimizer = NAdam(model.parameters(), lr=0.001, betas=(0.9, 0.999), eps=1e-08, weight_decay=0.001)
 
-def train(model, train_loader, val_loader, criterion, optimizer, num_epochs=10):
-    train_loss = []
-    val_loss = []
-    test_loss = []
-    train_accuracy = []
-    val_accuracy = []
-    test_accuracy = []
+train_loss = []
+val_loss = []
+test_loss = []
 
-    for epoch in range(num_epochs):
-        model.train()
-        correct = 0
-        total = 0
-        total_loss = 0
-        iteration = 0
-        for inputs, labels in train_loader:
-            #print(inputs.shape)  
+train_accuracy = []
+val_accuracy = []
+test_accuracy = []
+
+for epoch in range(num_epochs):
+    model.train()
+    total_loss = 0
+    correct    = 0 
+    total      = 0
+    iteration  = 0
+
+    for inputs, labels in train_loader:
+        #print(inputs.shape)  
+        inputs, labels = inputs.to(device), labels.to(device)
+        labels_one_hot = torch.eye(2, device=device)[labels].to(device)
+
+        optimizer.zero_grad()
+        outputs = model(inputs)
+        loss = criterion(outputs, labels_one_hot)
+
+        loss.backward()
+        optimizer.step()
+
+        total_loss += loss.item()
+        iteration += 1
+        predicted = outputs.argmax(dim=1)
+        total += labels.size(0)
+        correct += (predicted == labels).sum().item()
+
+        # print(f'Pred: {predicted}, labels: {labels}, total: {total}, correct: {correct}')
+        # print (f'Epoch {epoch+1}, Iteration {iteration+1} ,Loss per iter: {total_loss}')
+
+    accuracy = 100 * correct / total
+    train_loss.append(total_loss/len(train_loader))
+    train_accuracy.append(accuracy)
+
+    print(f'Epoch {epoch+1}, Training Loss: {total_loss/len(train_loader)}')
+    print('Training Accuracy: %d %%' % (accuracy))
+
+    # Validation
+    model.eval()
+
+    correct = 0
+    total = 0
+    total_loss = 0
+
+    with torch.no_grad():
+        for inputs, labels in val_loader:
             inputs, labels = inputs.to(device), labels.to(device)
             labels_one_hot = torch.eye(2, device=device)[labels].to(device)
-            optimizer.zero_grad()
             outputs = model(inputs)
             loss = criterion(outputs, labels_one_hot)
-            loss.backward()
-            optimizer.step()
-            total_loss += loss.item()
-            iteration += 1
-            predicted = outputs.argmax(dim=1)
+
+            total_loss += loss.item() * inputs.size(0)
+            predicted = torch.round(outputs).argmax(dim=1)  
             total += labels.size(0)
             correct += (predicted == labels).sum().item()
-
             # print(f'Pred: {predicted}, labels: {labels}, total: {total}, correct: {correct}')
-            # print (f'Epoch {epoch+1}, Iteration {iteration+1} ,Loss per iter: {total_loss}')
 
         accuracy = 100 * correct / total
-        print(f'Epoch {epoch+1}, Training Loss: {total_loss/len(train_loader)}')
-        print('Training Accuracy: %d %%' % (accuracy))
-        train_loss.append(total_loss/len(train_loader))
-        train_accuracy.append(accuracy)
+        val_loss.append(total_loss/len(val_loader))
+        val_accuracy.append(accuracy)
 
-        # Validation
-        model.eval()
-        with torch.no_grad():
-            correct = 0
-            total = 0
-            total_loss = 0
-            for inputs, labels in val_loader:
-                images, labels = inputs.to(device), labels.to(device)
-                labels_one_hot = torch.eye(2, device=device)[labels].to(device)
-                outputs = model(images)
-                loss = criterion(outputs, labels_one_hot)
-                total_loss += loss.item()
-                predicted = torch.round(outputs).argmax(dim=1)  
-                total += labels.size(0)
-                correct += (predicted == labels).sum().item()
-                # print(f'Pred: {predicted}, labels: {labels}, total: {total}, correct: {correct}')
+        print(f'Epoch {epoch+1}, Validation Loss: {total_loss/len(val_loader)}')
+        print('Validation Accuracy: %d %%' % (accuracy))
 
-            accuracy = 100 * correct / total
-            print(f'Epoch {epoch+1}, Validation Loss: {total_loss/len(val_loader)}')
-            print('Validation Accuracy: %d %%' % (accuracy))
-            val_loss.append(total_loss/len(val_loader))
-            val_accuracy.append(accuracy)
 
-        # Validation
-        model.eval()
-        with torch.no_grad():
-            correct = 0
-            total = 0
-            total_loss = 0
-            for inputs, labels in test_loader:
-                images, labels = inputs.to(device), labels.to(device)
-                labels_one_hot = torch.eye(2, device=device)[labels].to(device)
-                outputs = model(images)
-                loss = criterion(outputs, labels_one_hot)
-                total_loss += loss.item()
-                predicted = torch.round(outputs).argmax(dim=1)
-                total += labels.size(0)
-                correct += (predicted == labels).sum().item()
-                # print(f'Pred: {predicted}, labels: {labels}, total: {total}, correct: {correct}')
+    # Testing
+    model.eval()
+    correct = 0
+    total = 0
+    total_loss = 0
+    with torch.no_grad():
+        for inputs, labels in test_loader:
+            images, labels = inputs.to(device), labels.to(device)
+            labels_one_hot = torch.eye(2, device=device)[labels].to(device)
+            outputs = model(images)
+            loss = criterion(outputs, labels_one_hot)
+            total_loss += loss.item()
+            predicted = torch.round(outputs).argmax(dim=1)
+            total += labels.size(0)
+            correct += (predicted == labels).sum().item()
+            # print(f'Pred: {predicted}, labels: {labels}, total: {total}, correct: {correct}')
+            #all_labels.extend(labels.to(device).numpy())
+            #all_preds.extend(predicted.to(device).numpy())
 
-            accuracy = 100 * correct / total
-            print(f'Epoch {epoch+1}, Testing Loss: {total_loss/len(test_loader)}')
-            print('Testing Accuracy: %d %%' % (accuracy))
-            test_loss.append(total_loss/len(val_loader))
-            test_accuracy.append(accuracy)
+        accuracy = 100 * correct / total
+        test_loss.append(total_loss/len(val_loader))
+        test_accuracy.append(accuracy)
+        print(f'Epoch {epoch+1}, Testing Loss: {total_loss/len(test_loader)}')
+        print('Testing Accuracy: %d %%' % (accuracy))
 
-    return train_loss, val_loss, test_loss, train_accuracy, val_accuracy, test_accuracy
-
-# Execute the training
-train_loss, val_loss, test_loss, train_accuracy, val_accuracy, test_accuracy = train(model, train_loader, val_loader, criterion, optimizer)
+    ## Score report
+    #print(classification_report(all_labels, all_preds, target_names=['class_0', 'class_1', 'class_n']))
+    #
+    ## Accuracy
+    #accuracy = accuracy_score(all_labels, all_preds)
+    #print(f'Accuracy: {accuracy:.2f}')
 
 print ("Ended in", time.time() - start_time, "seconds.")
 
 # Train Loss and Accuracy by Epochs
+
+plt.figure(figsize=(12, 5))
+plt.subplot(1, 2, 1)
 
 plt.plot(train_accuracy, label ="Train Accuracy")
 plt.plot(test_accuracy, label ="Test Accuracy")
@@ -233,7 +265,8 @@ plt.plot(val_accuracy, label ="Validation Accuracy")
 plt.legend()
 plt.xlabel('Total number of epochs')
 plt.ylabel('Accuracy (%)')
-plt.show()
+
+plt.subplot(1, 2, 2)
 
 plt.plot(train_loss, label ="Train Loss")
 plt.plot(test_loss, label ="Test Loss")
@@ -243,41 +276,3 @@ plt.xlabel('Total number of epochs')
 plt.ylabel('Loss')
 plt.show()
 
-print (x_train.shape)
-print (x_train[0].shape)
-
-############### Extra ##################
-#initial_bias = np.log([COUNT_PNEUMONIA/COUNT_NORMAL])
-#initial_bias
-#
-#weight_for_0 = (1 / COUNT_NORMAL)*(TRAIN_IMG_COUNT)/2.0 
-#weight_for_1 = (1 / COUNT_PNEUMONIA)*(TRAIN_IMG_COUNT)/2.0
-#
-#class_weight = {0: weight_for_0, 1: weight_for_1}
-#
-#print('Weight for class 0: {:.2f}'.format(weight_for_0))
-#print('Weight for class 1: {:.2f}'.format(weight_for_1))
-#
-#with strategy.scope():
-#    model = build_model()
-#
-#    METRICS = [
-#        'accuracy',
-#        tf.keras.metrics.Precision(name='precision'),
-#        tf.keras.metrics.Recall(name='recall')
-#    ]
-#    
-#    model.compile(
-#        optimizer='adam',
-#        loss='binary_crossentropy',
-#        metrics=METRICS
-#    )
-#
-#history = model.fit(
-#    train_ds,
-#    steps_per_epoch=TRAIN_IMG_COUNT // BATCH_SIZE,
-#    epochs=EPOCHS,
-#    validation_data=val_ds,
-#    validation_steps=VAL_IMG_COUNT // BATCH_SIZE,
-#    class_weight=class_weight,
-#)
