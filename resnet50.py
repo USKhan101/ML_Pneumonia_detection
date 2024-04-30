@@ -21,8 +21,9 @@ from sklearn.metrics import classification_report, accuracy_score, mean_squared_
 
 file_path = './processed_data/normalized_rawdata.h5'
 augm_path = './processed_data/augmented_traindata.h5'
+enhance_path = './processed_data/enhanced_data.h5'
 
-num_epochs = 50
+num_epochs = 20
 
 start_time = time.time()
 
@@ -31,23 +32,37 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 augmentation = False # To fit the model for raw/ augmented data
 
 ## Reading data from file
-with h5py.File(file_path, 'r') as file:
-
-    x_val =   np.array(file['val_data'][:])
-    y_val =   np.array(file['val_label'][:])
-
-    x_test =  np.array(file['test_data'][:])
-    y_test =  np.array(file['test_label'][:])
+#with h5py.File(file_path, 'r') as file:
+#    x_train = np.array(file['train_data'][:])
+#    y_train = np.array(file['train_label'][:])
+#
+#    x_val =   np.array(file['val_data'][:])
+#    y_val =   np.array(file['val_label'][:])
+#
+#    x_test =  np.array(file['test_data'][:])
+#    y_test =  np.array(file['test_label'][:])
 
 if (augmentation):
     with h5py.File(augm_path, 'r') as file:
         x_train = np.array(file['train_data'][:])
         y_train = np.array(file['train_label'][:])
 
+    with h5py.File(enhance_path, 'r') as file:
+        x_val =   np.array(file['val_data'][:])
+        y_val =   np.array(file['val_label'][:])
+
+        x_test =  np.array(file['test_data'][:])
+        y_test =  np.array(file['test_label'][:])
 else:
-    with h5py.File(file_path, 'r') as file:
+    with h5py.File(enhance_path, 'r') as file:
         x_train = np.array(file['train_data'][:])
         y_train = np.array(file['train_label'][:])
+
+        x_val =   np.array(file['val_data'][:])
+        y_val =   np.array(file['val_label'][:])
+
+        x_test =  np.array(file['test_data'][:])
+        y_test =  np.array(file['test_label'][:])
 
 print (x_train.shape)
 print (y_train.shape)
