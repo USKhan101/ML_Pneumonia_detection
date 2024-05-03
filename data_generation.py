@@ -1,6 +1,7 @@
 import os
 import cv2
 import h5py
+import random
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -28,6 +29,8 @@ def array_data (data_dir):
             img_arr = cv2.imread(os.path.join(path, img), cv2.IMREAD_GRAYSCALE)
             resized_arr = cv2.resize(img_arr, (img_size, img_size))
             data.append ([resized_arr, class_num])
+
+    random.shuffle (data)
 
     return np.array(data, dtype=object)
 
@@ -135,30 +138,66 @@ plt.savefig('./plots/new_count_plot.pdf', dpi=300, bbox_inches='tight')
 plt.show()
 
 # Show random grayscale x-ray images from train, test, val dataset
-plt.figure(figsize=(10,8))
+plt.figure(figsize=(10,12))
 
-plt.subplot(2, 3, 1) 
+plt.subplot(4, 3, 1) 
 plt.imshow(x_train[0])
 plt.title('Train_data: NORMAL')
 
-plt.subplot(2, 3, 4) 
+plt.subplot(4, 3, 4) 
+plt.hist(x_train[0].ravel(), bins=50, color='gray', alpha=0.75)
+plt.xlabel('Pixel Intensity')
+plt.ylabel('Frequency')
+plt.title('Train_data: NORMAL')
+
+plt.subplot(4, 3, 7) 
 plt.imshow(x_train[-1])
 plt.title('Train_data: PNEUMONIA')
 
-plt.subplot(2, 3, 2) 
+plt.subplot(4, 3, 10) 
+plt.hist(x_train[-1].ravel(), bins=50, color='gray', alpha=0.75)
+plt.xlabel('Pixel Intensity')
+plt.ylabel('Frequency')
+plt.title('Train_data: PNEUMONIA')
+
+plt.subplot(4, 3, 2) 
 plt.imshow(x_val[0])
 plt.title('Val_data: NORMAL')
 
-plt.subplot(2, 3, 5) 
+plt.subplot(4, 3, 5) 
+plt.hist(x_val[0].ravel(), bins=50, color='gray', alpha=0.75)
+plt.xlabel('Pixel Intensity')
+plt.ylabel('Frequency')
+plt.title('Val_data: NORMAL')
+
+plt.subplot(4, 3, 8) 
 plt.imshow(x_val[-1])
 plt.title('Val_data: PNEUMONIA')
 
-plt.subplot(2, 3, 3) 
+plt.subplot(4, 3, 11) 
+plt.hist(x_val[-1].ravel(), bins=50, color='gray', alpha=0.75)
+plt.xlabel('Pixel Intensity')
+plt.ylabel('Frequency')
+plt.title('Val_data: PNEUMONIA')
+
+plt.subplot(4, 3, 3) 
 plt.imshow(x_test[0])
 plt.title('Test_data: NORMAL')
 
-plt.subplot(2, 3, 6) 
+plt.subplot(4, 3, 6) 
+plt.hist(x_test[0].ravel(), bins=50, color='gray', alpha=0.75)
+plt.xlabel('Pixel Intensity')
+plt.ylabel('Frequency')
+plt.title('Test_data: NORMAL')
+
+plt.subplot(4, 3, 9) 
 plt.imshow(x_test[-1])
+plt.title('Test_data: PNEUMONIA')
+
+plt.subplot(4, 3, 12) 
+plt.hist(x_test[-1].ravel(), bins=50, color='gray', alpha=0.75)
+plt.xlabel('Pixel Intensity')
+plt.ylabel('Frequency')
 plt.title('Test_data: PNEUMONIA')
 
 plt.tight_layout()
@@ -169,49 +208,6 @@ plt.show()
 plt.figure()
 plt.pie([len(y_train), len(y_val), len(y_test)], labels=['train', 'validation', 'test'], autopct='%1.1f%%', colors=['orange', 'red', 'lightblue'], explode=(0.05, 0, 0))
 plt.savefig('./plots/new_pie_chart.pdf', dpi=300, bbox_inches='tight')
-plt.show()
-
-# Plot the histogram of pixel values from each dataset
-plt.figure(figsize=(10,8))
-
-plt.subplot(2, 3, 1) 
-plt.hist(x_train[0].ravel(), bins=50, color='gray', alpha=0.75)
-plt.xlabel('Pixel Intensity')
-plt.ylabel('Frequency')
-plt.title('Train_data: NORMAL')
-
-plt.subplot(2, 3, 4) 
-plt.hist(x_train[-1].ravel(), bins=50, color='gray', alpha=0.75)
-plt.xlabel('Pixel Intensity')
-plt.ylabel('Frequency')
-plt.title('Train_data: PNEUMONIA')
-
-plt.subplot(2, 3, 2) 
-plt.hist(x_val[0].ravel(), bins=50, color='gray', alpha=0.75)
-plt.xlabel('Pixel Intensity')
-plt.ylabel('Frequency')
-plt.title('Val_data: NORMAL')
-
-plt.subplot(2, 3, 5) 
-plt.hist(x_val[-1].ravel(), bins=50, color='gray', alpha=0.75)
-plt.xlabel('Pixel Intensity')
-plt.ylabel('Frequency')
-plt.title('Val_data: PNEUMONIA')
-
-plt.subplot(2, 3, 3) 
-plt.hist(x_test[0].ravel(), bins=50, color='gray', alpha=0.75)
-plt.xlabel('Pixel Intensity')
-plt.ylabel('Frequency')
-plt.title('Test_data: NORMAL')
-
-plt.subplot(2, 3, 6) 
-plt.hist(x_test[-1].ravel(), bins=50, color='gray', alpha=0.75)
-plt.xlabel('Pixel Intensity')
-plt.ylabel('Frequency')
-plt.title('Test_data: PNEUMONIA')
-
-plt.tight_layout()
-plt.savefig('./plots/new_image_histogram.pdf', dpi=300, bbox_inches='tight')
 plt.show()
 
 # Save the normalized dataset into h5 file

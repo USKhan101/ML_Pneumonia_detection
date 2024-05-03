@@ -96,7 +96,7 @@ def count_plot(label):
         ax.annotate(f'{int(p.get_height())}', (p.get_x() + p.get_width() / 2., p.get_height()), ha = 'center', va = 'center', xytext = (0, 10), textcoords = 'offset points')
 
 # Count plot for training data after augmentation
-plt.figure(figsize=(12, 10))
+plt.figure(figsize=(8, 4))
 
 plt.subplot(1, 2, 1)
 count_plot(y_train_augmented)

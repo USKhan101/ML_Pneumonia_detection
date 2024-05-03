@@ -8,7 +8,7 @@ x = np.linspace(-3.5, 3.5, 1000)
 # Normal distribution values
 y = norm.pdf(x, 0, 1)  # mean = 0, std deviation = 1
 
-plt.figure(figsize=(10, 6))
+plt.figure(figsize=(12, 6))
 
 # Plot the normal distribution
 plt.plot(x, y, 'k-', linewidth=2, label='Standard Normal Distribution')

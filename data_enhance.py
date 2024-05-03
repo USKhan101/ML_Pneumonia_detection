@@ -56,79 +56,71 @@ x_val = np.float32(data_enhance (x_val) / 255)
 x_test = np.float32(data_enhance (x_test) / 255)
 
 # Show random grayscale x-ray images from train, test, val dataset
-plt.figure(figsize=(10,8))
+plt.figure(figsize=(10,12))
 
-plt.subplot(2, 3, 1)
+plt.subplot(4, 3, 1)
 plt.imshow(x_train[0])
 plt.title('Train_data: NORMAL')
 
-plt.subplot(2, 3, 4)
-plt.imshow(x_train[-1])
-plt.title('Train_data: PNEUMONIA')
-
-plt.subplot(2, 3, 2)
-plt.imshow(x_val[0])
-plt.title('Val_data: NORMAL')
-
-plt.subplot(2, 3, 5)
-plt.imshow(x_val[-1])
-plt.title('Val_data: PNEUMONIA')
-
-plt.subplot(2, 3, 3)
-plt.imshow(x_test[0])
-plt.title('Test_data: NORMAL')
-
-plt.subplot(2, 3, 6)
-plt.imshow(x_test[-1])
-plt.title('Test_data: PNEUMONIA')
-
-plt.tight_layout()
-plt.savefig('./plots/enhanced_rand_image.pdf', dpi=300, bbox_inches='tight')
-plt.show()
-
-# Plot the histogram of pixel values from each dataset
-plt.figure(figsize=(10,8))
-
-plt.subplot(2, 3, 1) 
+plt.subplot(4, 3, 4) 
 plt.hist(x_train[0].ravel(), bins=50, color='gray', alpha=0.75)
 plt.xlabel('Pixel Intensity')
 plt.ylabel('Frequency')
 plt.title('Train_data: NORMAL')
 
-plt.subplot(2, 3, 4) 
+plt.subplot(4, 3, 7)
+plt.imshow(x_train[-1])
+plt.title('Train_data: PNEUMONIA')
+
+plt.subplot(4, 3, 10) 
 plt.hist(x_train[-1].ravel(), bins=50, color='gray', alpha=0.75)
 plt.xlabel('Pixel Intensity')
 plt.ylabel('Frequency')
 plt.title('Train_data: PNEUMONIA')
 
-plt.subplot(2, 3, 2) 
+plt.subplot(4, 3, 2)
+plt.imshow(x_val[0])
+plt.title('Val_data: NORMAL')
+
+plt.subplot(4, 3, 5) 
 plt.hist(x_val[0].ravel(), bins=50, color='gray', alpha=0.75)
 plt.xlabel('Pixel Intensity')
 plt.ylabel('Frequency')
 plt.title('Val_data: NORMAL')
 
-plt.subplot(2, 3, 5) 
+plt.subplot(4, 3, 8)
+plt.imshow(x_val[-1])
+plt.title('Val_data: PNEUMONIA')
+
+plt.subplot(4, 3, 11) 
 plt.hist(x_val[-1].ravel(), bins=50, color='gray', alpha=0.75)
 plt.xlabel('Pixel Intensity')
 plt.ylabel('Frequency')
 plt.title('Val_data: PNEUMONIA')
 
-plt.subplot(2, 3, 3) 
+plt.subplot(4, 3, 3)
+plt.imshow(x_test[0])
+plt.title('Test_data: NORMAL')
+
+plt.subplot(4, 3, 6) 
 plt.hist(x_test[0].ravel(), bins=50, color='gray', alpha=0.75)
 plt.xlabel('Pixel Intensity')
 plt.ylabel('Frequency')
 plt.title('Test_data: NORMAL')
 
-plt.subplot(2, 3, 6) 
+plt.subplot(4, 3, 9)
+plt.imshow(x_test[-1])
+plt.title('Test_data: PNEUMONIA')
+
+plt.subplot(4, 3, 12) 
 plt.hist(x_test[-1].ravel(), bins=50, color='gray', alpha=0.75)
 plt.xlabel('Pixel Intensity')
 plt.ylabel('Frequency')
 plt.title('Test_data: PNEUMONIA')
 
 plt.tight_layout()
-plt.savefig('./plots/enhanced_image_histogram.pdf', dpi=300, bbox_inches='tight')
+plt.savefig('./plots/enhanced_rand_image.pdf', dpi=300, bbox_inches='tight')
 plt.show()
-
 
 # Save enhanced data 
 out_path = './processed_data/enhanced_data.h5'

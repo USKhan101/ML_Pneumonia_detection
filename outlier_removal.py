@@ -49,7 +49,7 @@ print(f"Filtered data count: {len(x_train_Zfiltered)}")
 labels = ['Before Z-score', 'After Z-score']
 counts = [len(x_train), len(x_train_Zfiltered)]
 
-plt.figure(figsize=(8, 4))
+plt.figure(figsize=(4, 4))
 bars = plt.bar(labels, counts, color=['orange', 'green'])
 
 plt.title('Train data count before and after Z-score outlier removal')
@@ -101,7 +101,7 @@ print(f"Filtered data count: {len(x_train_IQRfiltered)}")
 labels = ['Before IQR', 'After IQR']
 counts = [len(x_train_Zfiltered), len(x_train_IQRfiltered)]
 
-plt.figure(figsize=(8, 4))
+plt.figure(figsize=(4, 4))
 bars = plt.bar(labels, counts, color=['orange', 'green'])
 
 plt.title('Train data count before and after IQR outlier removal')
@@ -167,7 +167,7 @@ plot_category_distribution(x_train, y_train, 'train_data')
 plot_category_distribution(x_train_IQRfiltered, y_train_IQRfiltered, 'filtered_data')
 
 # Count plot for training data after outlier removal
-plt.figure(figsize=(15, 6))
+plt.figure(figsize=(12, 6))
 
 plt.subplot(1, 2, 1)
 count_plot(y_train_IQRfiltered)

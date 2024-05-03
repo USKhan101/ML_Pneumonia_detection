@@ -16,9 +16,9 @@ augm_path = './processed_data/augmented_traindata.h5'
 start_time = time.time()
 
 ## Reading data from file
-with h5py.File(enhance_path, 'r') as file:
-#    x_train = file['train_data'][:]
-#    y_train = file['train_label'][:]
+with h5py.File(file_path, 'r') as file:
+    x_train = file['train_data'][:]
+    y_train = file['train_label'][:]
 
     x_val = file['val_data'][:]
     y_val = file['val_label'][:]
@@ -26,9 +26,9 @@ with h5py.File(enhance_path, 'r') as file:
     x_test = file['test_data'][:]
     y_test = file['test_label'][:]
 
-with h5py.File(augm_path, 'r') as file:
-    x_train = file['train_data'][:]
-    y_train = file['train_label'][:]
+#with h5py.File(augm_path, 'r') as file:
+#    x_train = file['train_data'][:]
+#    y_train = file['train_label'][:]
 
 print (x_train.shape)
 print (y_train.shape)
@@ -49,7 +49,7 @@ x_train = x_train.reshape(x_train.shape[0], -1)
 x_test = x_test.reshape(x_test.shape[0], -1)
 
 ## Initialize Random Forest Classifier
-rf = RandomForestClassifier(random_state=43)
+rf = RandomForestClassifier()
 
 ## For Grid Search
 #param_grid = {
@@ -76,48 +76,48 @@ rf = RandomForestClassifier(random_state=43)
 #print("Classification Report on Test Data:")
 #print(classification_report(y_test, y_pred))
 
-# For random search
-param_rand = {
-    'n_estimators': [200, 300, 400, 500],
-    'max_depth': [30, 40, 50, 60],  
-    'min_samples_split': [2, 5, 10, 15, 20], 
-    'min_samples_leaf': [1, 2, 5, 10],  
-    'max_features': ['sqrt', 15, 30]
-}
-
-# RandomizedSearchCV
-random_search = RandomizedSearchCV(estimator=rf,
-                                   param_distributions=param_rand,
-                                   n_iter=100, 
-                                   cv=5,  # 5-fold cross-validation
-                                   verbose=1,  
-                                   random_state=43,  
-                                   scoring='accuracy') 
-
-# Fit the model
-random_search.fit(x_train, y_train)
-
-# Best parameters and score from random search
-print("Best parameters found: ", random_search.best_params_)
-print("Best cross-validation accuracy: ", random_search.best_score_)
-
-# Evaluate on the test set
-y_pred = random_search.predict(x_test)
-print("Test Accuracy: ", accuracy_score(y_test, y_pred))
-print("Classification Report on Test Data:")
-print(classification_report(y_test, y_pred))
+## For random search
+#param_rand = {
+#    'n_estimators': [200, 300, 400, 500],
+#    'max_depth': [30, 40, 50, 60],  
+#    'min_samples_split': [2, 5, 10, 15, 20], 
+#    'min_samples_leaf': [1, 2, 5, 10],  
+#    'max_features': ['sqrt', 15, 30]
+#}
+#
+## RandomizedSearchCV
+#random_search = RandomizedSearchCV(estimator=rf,
+#                                   param_distributions=param_rand,
+#                                   n_iter=100, 
+#                                   cv=5,  # 5-fold cross-validation
+#                                   verbose=1,  
+#                                   random_state=43,  
+#                                   scoring='accuracy') 
+#
+## Fit the model
+#random_search.fit(x_train, y_train)
+#
+## Best parameters and score from random search
+#print("Best parameters found: ", random_search.best_params_)
+#print("Best cross-validation accuracy: ", random_search.best_score_)
+#
+## Evaluate on the test set
+#y_pred = random_search.predict(x_test)
+#print("Test Accuracy: ", accuracy_score(y_test, y_pred))
+#print("Classification Report on Test Data:")
+#print(classification_report(y_test, y_pred))
 
 # Fit the model for found parameters
 #rf = RandomForestClassifier(n_estimators=120, max_depth=45, min_samples_split= 2, min_samples_leaf= 1, max_features= 'sqrt', random_state=43)
 
-#rf.fit(x_train, y_train)
-#
-## Predicting the test results
-#y_pred = rf.predict(x_test)
-#
-## Generating the classification report
-#print(classification_report(y_test, y_pred))
-#print(f"Accuracy:", accuracy_score(y_test, y_pred))
+rf.fit(x_train, y_train)
+
+# Predicting the test results
+y_pred = rf.predict(x_test)
+
+# Generating the classification report
+print(classification_report(y_test, y_pred))
+print(f"Accuracy:", accuracy_score(y_test, y_pred))
 
 # Calculate MSE
 mse = mean_squared_error(y_test, y_pred)
