@@ -139,9 +139,9 @@ model.to(device)
 summary(model, input_size=(1,224,224))
 
 # Optimizer and Loss function configuration
-criterion = nn.BCELoss()
+criterion = CrossEntropyLoss()
 
-optimizer = Adam(model.parameters())
+optimizer = Adam(model.parameters(), lr=0.0001, betas=(0.9, 0.999), eps=1e-08, weight_decay=0.001) 
 
 train_loss = []
 val_loss = []

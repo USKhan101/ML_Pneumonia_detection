@@ -19,11 +19,12 @@ Random_forest_classifier.py: Classifies the raw/augmenetd data or Extracted feat
 resnet50.py: RESNET50 for classifying the raw/augmenetd data or Extracted features for pneumonia detection.
 
 
-
 How to run:
 conda create -n myenv
 conda activate myenv
 conda install numpy opencv h5py matplotlib scikit-learn
-python3 file_name
+
+source data_all.sh
+python3 model_file_name
 
 conda deactivate
